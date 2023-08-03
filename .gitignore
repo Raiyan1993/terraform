@@ -1,0 +1,4 @@
+# Exclude some of the local folder
+Microsoft VS Code
+Project-1
+Git-2.41.0.3-64-bit.*
