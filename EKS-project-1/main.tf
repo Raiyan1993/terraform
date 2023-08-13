@@ -92,85 +92,6 @@ resource "aws_key_pair" "my-keypair" {
   key_name   = "tarraform-key"
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCxCsaSC8vCHsmONR10Bz+GqvrMCM6+RpajuUcbRsBPkkYT+p8bNw5oDZhOdgsvCp+Blaj5LhHCjTZhGT3C1+LvRMwb4IZNdhfhy0SrQDtN0dQnJlgwnaLkXGMsQ6I6ehJkNeDQ0wU5NOTITOZ4Q4AOmlaVRvjWcHjmAg4jVkOOLBNsl42Cw0aRSgOMo5RQSAuINl8OF8qbXh9rMcdrApAdS2UvLaD1zxpfeAIOjfdF2ZQL0UDafwEuOnyVVRCdMDrt6VcyXWNyo7NCr85jUGMTieMuSVL6ARJ+Aer4npKLRb7P4tsgKgIQKhu5J8coAm/GmfoVeWisGRpqZiqb8dZ5OYT6yPK2XUEwi69kmffiEmyfMJtOoRyomsPwP93WrxUtaJA037bBB/FmwYv80Zgbic1ZRdO6DQ2pRDs4uZ6dSh2QHBMWstfNB80OJ1mjw8iVtV4G1Dd9oBMuoqYC5QeQGxUn5gwpH+vAG7yMnBXXLPKvfAJHkE6QjnO2WD0qevM= raiyan@DESKTOP-670C4M2"
 }
-# # Create an EKS cluster
-# resource "aws_eks_cluster" "my_cluster" {
-#   name     = "Cluster02"
-#   role_arn = aws_iam_role.eks_cluster.arn
-#   version  = "1.23" # Replace with your desired Kubernetes version
-
-#   vpc_config {
-#     subnet_ids = [aws_subnet.pub_subnetA.id, aws_subnet.pub_subnetB.id] # Replace with your desired private subnet IDs for the EKS cluster
-#   }
-# }
-# # Create an IAM role for the EKS cluster
-# resource "aws_iam_role" "eks_cluster" {
-#   name = "eks-cluster-role"
-
-#   assume_role_policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Action = "sts:AssumeRole"
-#         Effect = "Allow"
-#         Principal = {
-#           Service = "eks.amazonaws.com"
-#         }
-#       }
-#     ]
-#   })
-# }
-# # Attach the necessary IAM policies to the EKS cluster role
-# resource "aws_iam_role_policy_attachment" "eks_cluster_policy_attachment" {
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-#   role       = aws_iam_role.eks_cluster.name
-# }
-# # Create an IAM role for the EKS node group
-# resource "aws_iam_role" "eks_node_group" {
-#   name = "eks-node-group-role"
-
-#   assume_role_policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Action = "sts:AssumeRole"
-#         Effect = "Allow"
-#         Principal = {
-#           Service = "ec2.amazonaws.com"
-#         }
-#       }
-#     ]
-#   })
-# }
-# # Attach the necessary IAM policies to the EKS node group role
-# resource "aws_iam_role_policy_attachment" "eks_node_group_policy_attachment" {
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-#   role       = aws_iam_role.eks_node_group.name
-# }
-
-# resource "aws_iam_role_policy_attachment" "eks_cni_policy_attachment" {
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-#   role       = aws_iam_role.eks_node_group.name
-# }
-
-# resource "aws_iam_role_policy_attachment" "eks_ec2_policy_attachment" {
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-#   role       = aws_iam_role.eks_node_group.name
-# }
-
-# Create an EKS node group
-# resource "aws_eks_node_group" "my_node_group" {
-#   cluster_name    = aws_eks_cluster.my_cluster.name
-#   node_group_name = "my-node-group"
-#   node_role_arn   = aws_iam_role.eks_node_group.arn
-#   subnet_ids      = [aws_subnet.pub_subnetA.id, aws_subnet.pub_subnetB.id]  # Add your subnet IDs here
-#   #instance_type   = "t3.medium"  # Replace with your desired instance type
-#   #desired_capacity = 2  # Replace with your desired number of nodes
-#   scaling_config {
-#     desired_size = 2  # Replace with your desired number of nodes
-#     max_size     = 4  # Replace with your desired maximum number of nodes
-#     min_size     = 1  # Replace with your desired minimum number of nodes
-#   }
-# }
 
 variable "worker_instance_type" {
   description = "worker instance type"
@@ -190,13 +111,11 @@ module "eks" {
     coredns = {
       resolve_conflicts_on_create = "OVERWRITE"
       resolve_conflicts_on_update = "OVERWRITE"
-
     }
     kube-proxy = {}
     vpc-cni = {
       resolve_conflicts_on_create = "OVERWRITE"
       resolve_conflicts_on_update = "OVERWRITE"
-      
     }
   }
 
@@ -206,8 +125,31 @@ module "eks" {
       launch_template_os = "amazonlinux2eks"
       subnet_ids         = [aws_subnet.pub_subnetA.id, aws_subnet.pub_subnetB.id]
       instance_type      = "t3.medium"
-        }
+      key_name           = aws_key_pair.my-keypair.key_name
+      min_size           = 1
+      max_size           = 4
+      desired_size       = 2
+      #iam_role_additional_policies = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+
     }
+  }
+  # Self managed node groups will not automatically create the aws-auth configmap so we need to
+  create_aws_auth_configmap = true
+  manage_aws_auth_configmap = true
+  aws_auth_roles = [
+    { 
+      rolearn = "arn:aws:iam::968020774214:role/self_mg_4-node-group-20230813042528843400000006"
+      username = "system:node:{{EC2PrivateDNSName}}"
+      groups   = ["system:bootstrappers", "system:nodes"]
+    },
+  ]
+  aws_auth_users = [
+    {
+      userarn  = "arn:aws:iam::550876841141:user/Raiyan"
+      username = "Raiyan"
+      groups   = ["system:masters"]
+    },
+  ]  
   
   tags = {
     Environment = "dev"
@@ -215,21 +157,25 @@ module "eks" {
   }  
 }
 
-resource "kubernetes_config_map" "aws_auth" {
-  metadata {
-    name      = "aws-auth"
-    namespace = "kube-system"
-  }
-  data = {
-    mapRoles = <<-EOT
-      - rolearn: "arn:aws:iam::255229340250:role/self_mg_4-node-group-20230802170652623100000006"
-        username: system:node:{{EC2PrivateDNSName}}
-        groups:
-          - system:bootstrappers
-          - system:nodes
-    EOT
-  }
-}
+# resource "kubernetes_config_map" "aws_auth" {
+#   metadata {
+#     name      = "aws-auth"
+#     namespace = "kube-system"
+#   }
+#   data = {
+#     mapRoles = <<-EOT
+#       - rolearn: "arn:aws:iam::968020774214:role/self_mg_4-node-group-20230813042528843400000006"
+#         username: system:node:{{EC2PrivateDNSName}}
+#         groups:
+#           - system:bootstrappers
+#           - system:nodes
+#     EOT
+#   }
+# }
+
+# data "aws_iam_roles" "my_nodegroup" {
+#   name_regex  = "self_mg_.*"
+# }
 
 # provider "kubernetes" {
 #   config_path = "~/.kube/config"
