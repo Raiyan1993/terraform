@@ -1,4 +1,4 @@
-output "eks_cluster_name" {
+output "cluster_name" {
   description = "The name of the EKS cluster."
   value       = module.eks.cluster_name
 }
@@ -8,12 +8,17 @@ output "configure_kubectl" {
   value       = "aws eks --region ${var.aws_region} update-kubeconfig --name ${module.eks.cluster_name}"
 }
 
-output "eks_cluster_endpoint" {
-  description = "The endpoint of the EKS cluster."
-  value       = module.eks.cluster_endpoint
-}
+# output "eks_cluster_endpoint" {
+#   description = "The endpoint of the EKS cluster."
+#   value       = module.eks.cluster_endpoint
+# }
 
 # output "cluster_certificate_authority_data" {
 #   description = "cluster_certificate_authority_data"
 #   value       = module.eks.cluster_certificate_authority_data
+# }
+
+# output "my_nodegroup_arn" {
+#   description = "Nodegroup rolearn"
+#   value       = data.aws_iam_roles.my_nodegroup.names
 # }
