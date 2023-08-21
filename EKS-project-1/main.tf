@@ -1,25 +1,20 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.8.0"
-    }
-  }
-}
-
 variable "aws_region" {
   default = "ap-southeast-1"
 }
 
-provider "aws" {
-  region     = var.aws_region
-  # access_key = "AKIAT256E5R7LWX5PMHT"
-  # secret_key = "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"
+variable "vpc_cidr" {
+  description = "VPC CIDR Range"
+  #default = "192.168.0.0/16"
+}
+
+variable "subnet_prefix" {
+  description = "subnet cidr with name seperated by comma"
+  #default = [{ cidr_block = "192.168.10.0/24", name = "pub_subA" }, { cidr_block = "192.168.20.0/24", name = "pub_subB" }]
 }
 
 # 1. Create VPC
 resource "aws_vpc" "my_vpc" {
-  cidr_block           = "192.168.0.0/16"
+  cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
   tags = {
@@ -27,10 +22,6 @@ resource "aws_vpc" "my_vpc" {
   }
 }
 
-variable "subnet_prefix" {
-  description = "cidr block for subnet"
-  #default = "10.0.30.0/24"
-}
 # 2. Create Subnet
 resource "aws_subnet" "pub_subnetA" {
   vpc_id                  = aws_vpc.my_vpc.id
@@ -98,13 +89,20 @@ variable "worker_instance_type" {
   default     = "t3.medium"
 }
 
-module "eks" {
-  source          = "terraform-aws-modules/eks/aws"
-  version         = "19.15.2"
-  cluster_name    = "EKS-Cluster"
+locals {
+  name            = "EKS-Cluster"
   cluster_version = "1.23"
-  subnet_ids      = [aws_subnet.pub_subnetA.id, aws_subnet.pub_subnetB.id]
-  vpc_id          = aws_vpc.my_vpc.id
+  region          = var.aws_region
+}
+
+module "eks" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "19.15.2"
+
+  cluster_name                   = local.name
+  cluster_version                = local.cluster_version
+  subnet_ids                     = [aws_subnet.pub_subnetA.id, aws_subnet.pub_subnetB.id]
+  vpc_id                         = aws_vpc.my_vpc.id
   cluster_endpoint_public_access = true
 
   cluster_addons = {
@@ -117,6 +115,9 @@ module "eks" {
       resolve_conflicts_on_create = "OVERWRITE"
       resolve_conflicts_on_update = "OVERWRITE"
     }
+    # lifecycle = {
+    #   ignore_changes = true
+    # }
   }
 
   self_managed_node_groups = {
@@ -126,8 +127,8 @@ module "eks" {
       subnet_ids         = [aws_subnet.pub_subnetA.id, aws_subnet.pub_subnetB.id]
       instance_type      = "t3.medium"
       key_name           = aws_key_pair.my-keypair.key_name
-      min_size           = 1
-      max_size           = 4
+      min_size           = 0
+      max_size           = 3
       desired_size       = 2
       #iam_role_additional_policies = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 
@@ -137,24 +138,24 @@ module "eks" {
   create_aws_auth_configmap = true
   manage_aws_auth_configmap = true
   aws_auth_roles = [
-    { 
-      rolearn = "arn:aws:iam::968020774214:role/self_mg_4-node-group-20230813042528843400000006"
+    {
+      rolearn  = "arn:aws:iam::968020774214:role/self_mg_4-node-group-20230813042528843400000006"
       username = "system:node:{{EC2PrivateDNSName}}"
       groups   = ["system:bootstrappers", "system:nodes"]
     },
   ]
-  aws_auth_users = [
-    {
-      userarn  = "arn:aws:iam::550876841141:user/Raiyan"
-      username = "Raiyan"
-      groups   = ["system:masters"]
-    },
-  ]  
-  
+  # aws_auth_users = [
+  #   {
+  #     userarn  = "arn:aws:iam::550876841141:user/Raiyan"
+  #     username = "Raiyan"
+  #     groups   = ["system:masters"]
+  #   },
+  # ]  
+
   tags = {
     Environment = "dev"
     Terraform   = "true"
-  }  
+  }
 }
 
 # resource "kubernetes_config_map" "aws_auth" {
@@ -191,4 +192,3 @@ module "eks" {
 #     namespace = ""
 #   }
 # }
-
