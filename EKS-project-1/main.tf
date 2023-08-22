@@ -132,51 +132,9 @@ module "eks" {
       groups   = ["system:bootstrappers", "system:nodes"]
     },
   ]
-  # aws_auth_users = [
-  #   {
-  #     userarn  = "arn:aws:iam::550876841141:user/Raiyan"
-  #     username = "Raiyan"
-  #     groups   = ["system:masters"]
-  #   },
-  # ]  
-
+  
   tags = {
     Environment = "dev"
     Terraform   = "true"
   }
 }
-
-# resource "kubernetes_config_map" "aws_auth" {
-#   metadata {
-#     name      = "aws-auth"
-#     namespace = "kube-system"
-#   }
-#   data = {
-#     mapRoles = <<-EOT
-#       - rolearn: "arn:aws:iam::968020774214:role/self_mg_4-node-group-20230813042528843400000006"
-#         username: system:node:{{EC2PrivateDNSName}}
-#         groups:
-#           - system:bootstrappers
-#           - system:nodes
-#     EOT
-#   }
-# }
-
-# data "aws_iam_roles" "my_nodegroup" {
-#   name_regex  = "self_mg_.*"
-# }
-
-# provider "kubernetes" {
-#   config_path = "~/.kube/config"
-# }
-# # import the aws-auth configmap #
-# resource "kubernetes_config_map" "aws-auth" {
-#   data = {
-#     "mapRoles" = ""
-#   }
-
-#   metadata {
-#     name      = ""
-#     namespace = ""
-#   }
-# }
