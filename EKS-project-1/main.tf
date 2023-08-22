@@ -4,10 +4,8 @@ variable "aws_region" {
 
 variable "vpc_cidr" {
   description = "VPC CIDR Range"
-  #default = "192.168.0.0/16"
+  default = "192.168.0.0/16"
 }
-
-data "aws_region" "current" {}
 
 data "aws_availability_zones" "available" {
   state = "available"
@@ -20,7 +18,6 @@ resource "aws_vpc" "my_vpc" {
   enable_dns_hostnames = true
   tags = {
     Name = "terraform-eks",
-    # kubernetes.io/cluster/EKS-Cluster = "shared",
   }
 }
 
@@ -33,14 +30,12 @@ resource "aws_subnet" "pub_subnet" {
   vpc_id                  = aws_vpc.my_vpc.id
   tags = {
     Name = "terraform-eks",
-    # kubernetes.io/cluster/EKS-Cluster = "shared",
   }
 }
 
 # 3. Create internet gateway
 resource "aws_internet_gateway" "myIGW" {
   vpc_id = aws_vpc.my_vpc.id
-
   tags = {
     Name = "myIGW"
   }
@@ -53,7 +48,6 @@ resource "aws_route_table" "pub-RT" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.myIGW.id
   }
-
   route {
     ipv6_cidr_block = "::/0"
     gateway_id      = aws_internet_gateway.myIGW.id
@@ -103,13 +97,10 @@ module "eks" {
       resolve_conflicts_on_create = "OVERWRITE"
       resolve_conflicts_on_update = "OVERWRITE"
     }
-    # lifecycle = {
-    #   ignore_changes = true
-    # }
   }
 
   self_managed_node_groups = {
-    self_mg_4 = {
+    self_mng = {
       node_group_name    = "self-managed-ondemand"
       launch_template_os = "amazonlinux2eks"
       subnet_ids         = aws_subnet.pub_subnet[*].id
@@ -118,21 +109,21 @@ module "eks" {
       min_size           = 0
       max_size           = 3
       desired_size       = 2
-      #iam_role_additional_policies = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-
     }
   }
+
   # Self managed node groups will not automatically create the aws-auth configmap so we need to
   create_aws_auth_configmap = true
   manage_aws_auth_configmap = true
+  
   aws_auth_roles = [
     {
-      rolearn  = "arn:aws:iam::968020774214:role/self_mg_4-node-group-20230813042528843400000006"
+      rolearn  = "arn:aws:iam::968020774214:role/self_mng-node-group-20230813042528843400000006"
       username = "system:node:{{EC2PrivateDNSName}}"
       groups   = ["system:bootstrappers", "system:nodes"]
     },
   ]
-  
+
   tags = {
     Environment = "dev"
     Terraform   = "true"

@@ -19,6 +19,10 @@ kubectl proxy --port=80
 
 Note: Rerun the "terraform apply" command in case of any failure. However, you can terminate the execution if it remains stuck for an extended period during coreDNS creation or when a node has joined the cluster.
 
+To Destroy specific resource created by module
+
+terraform destroy --target=<module.name.resource>
+
 **Reference:**
 
 [1] https://kubernetes.io/docs/tasks/extend-kubernetes/http-proxy-access-api/
