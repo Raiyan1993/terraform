@@ -17,5 +17,5 @@ Also, Enable proxy using
 
 kubectl proxy --port=80
 
-Note: Re-run "terraform apply" command incase of any failure., However, can terminate the execution if it stuck for a long time in coreDNS creation state or node gets joined the cluster.
+Note: Rerun the "terraform apply" command in case of any failure. However, you can terminate the execution if it remains stuck for an extended period during coreDNS creation or when a node joins the cluster.
 
