@@ -1,8 +1,8 @@
 terraform {
   backend "s3" {
-    bucket                  = "terraform-state-s3-raiyan"
-    key                     = "my-terraform-project"
-    region                  = "ap-southeast-1"
+    bucket = "terraform-state-s3-raiyan"
+    key    = "my-terraform-project"
+    region = "ap-southeast-1"
     #dynamodb_table          = "terraform-state-lock-dynamo"
   }
 }
@@ -21,7 +21,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "my-s3" {
-    bucket = "terraform-state-s3-raiyan"   
+  bucket = "terraform-state-s3-raiyan"
 }
 resource "aws_s3_bucket_versioning" "my-versioning" {
   bucket = aws_s3_bucket.my-s3.id
@@ -32,7 +32,7 @@ resource "aws_s3_bucket_versioning" "my-versioning" {
 
 # 1. Create VPC
 resource "aws_vpc" "my_vpc" {
-  cidr_block = "10.0.0.0/16"
+  cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
   tags = {
@@ -46,20 +46,20 @@ variable "subnet_prefix" {
 }
 # 2. Create Subnet
 resource "aws_subnet" "pub_subnetA" {
-  vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = var.subnet_prefix[0].cidr_block
+  vpc_id                  = aws_vpc.my_vpc.id
+  cidr_block              = var.subnet_prefix[0].cidr_block
   map_public_ip_on_launch = true
-  availability_zone = var.app_region == "ap-southeast-1" ? "ap-southeast-1a" : "us-east-1a"
+  availability_zone       = var.app_region == "ap-southeast-1" ? "ap-southeast-1a" : "us-east-1a"
 
   tags = {
     Name = var.subnet_prefix[0].name
   }
 }
 resource "aws_subnet" "pub_subnetB" {
-  vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = var.subnet_prefix[1].cidr_block
+  vpc_id                  = aws_vpc.my_vpc.id
+  cidr_block              = var.subnet_prefix[1].cidr_block
   map_public_ip_on_launch = true
-  availability_zone = var.app_region == "ap-southeast-1" ? "ap-southeast-1b" : "us-east-1b"
+  availability_zone       = var.app_region == "ap-southeast-1" ? "ap-southeast-1b" : "us-east-1b"
 
   tags = {
     Name = var.subnet_prefix[1].name
@@ -83,8 +83,8 @@ resource "aws_route_table" "pub-RT" {
   }
 
   route {
-    ipv6_cidr_block        = "::/0"
-    gateway_id = aws_internet_gateway.myIGW.id
+    ipv6_cidr_block = "::/0"
+    gateway_id      = aws_internet_gateway.myIGW.id
   }
 
   tags = {
@@ -168,24 +168,24 @@ resource "aws_eip" "my_eip" {
   #vpc                       = true
   network_interface         = aws_network_interface.my-ENI.id
   associate_with_private_ip = "10.0.10.50"
-  depends_on = [aws_internet_gateway.myIGW]
+  depends_on                = [aws_internet_gateway.myIGW]
 }
 # Create ssh keypair
 resource "aws_key_pair" "my-keypair" {
-  key_name = "terraform-key"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCxCsaSC8vCHsmONR10Bz+GqvrMCM6+RpajuUcbRsBPkkYT+p8bNw5oDZhOdgsvCp+Blaj5LhHCjTZhGT3C1+LvRMwb4IZNdhfhy0SrQDtN0dQnJlgwnaLkXGMsQ6I6ehJkNeDQ0wU5NOTITOZ4Q4AOmlaVRvjWcHjmAg4jVkOOLBNsl42Cw0aRSgOMo5RQSAuINl8OF8qbXh9rMcdrApAdS2UvLaD1zxpfeAIOjfdF2ZQL0UDafwEuOnyVVRCdMDrt6VcyXWNyo7NCr85jUGMTieMuSVL6ARJ+Aer4npKLRb7P4tsgKgIQKhu5J8coAm/GmfoVeWisGRpqZiqb8dZ5OYT6yPK2XUEwi69kmffiEmyfMJtOoRyomsPwP93WrxUtaJA037bBB/FmwYv80Zgbic1ZRdO6DQ2pRDs4uZ6dSh2QHBMWstfNB80OJ1mjw8iVtV4G1Dd9oBMuoqYC5QeQGxUn5gwpH+vAG7yMnBXXLPKvfAJHkE6QjnO2WD0qevM= raiyan@DESKTOP-670C4M2"
+  key_name   = "terraform-key"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDIEj7w17D/w9H9L+9hB72vON7Q7R018qvhdc33yDbDEZ2goVm63zuBB16QtkjQz1VRbiu2PFNRfwyCHTKbmG+uON3RkAnAfKm4/WdZv/mydNnzsRNqYHitrRvzi68zWo0ixOQQwQXzznyggYbcb2XpaQZzwhEwEdyPRNxk0kcjDzatmcWrrIlcL8SrYwacceylg1mMJBDApH2x0EloBvdJKw1My8ru9mCO5HBX3Z/1WRWzSwPNqEshJIaZ0CSNW56UkRh23Y0Z47mgoVCKXMYUBwFjVBlRrHgfRG/8pu6jCxehjM8hpwVEyIAu4z+JlE9baCmbuxxjWWOCtD0hPxTDa5qupF/e7qKY5hy8MIIe+DvWKaR8qUNVM/veTF5hie1OzLRXVoYcZNtsFdF7NiZ96Je4dweCWyuM0yLYrGFCY8XD7IXjpAZUbtiPmP5C4cWUvE8kx+/Bu2+UQ3kkjUpsTGvIP+o7h+F5+sjw1+FNBYC0feVOhY8o/8ciMfKPkMc= raiyan@EPINCHEW015C"
 }
 #
 variable "resource_list" {
-  type = set(string)
-  default = ["web1", "web2"]
-  
+  type    = set(string)
+  default = ["web1"]
+
 }
 # 9. Create instance
 resource "aws_instance" "jenkins_instance" {
-  ami           = "ami-0df7a207adb9748c7" # ap-southeast-1
-  instance_type = "t3.medium"
-  key_name = aws_key_pair.my-keypair.key_name
+  ami               = "ami-0df7a207adb9748c7" # ap-southeast-1
+  instance_type     = "t3.medium"
+  key_name          = aws_key_pair.my-keypair.key_name
   availability_zone = var.app_region == "ap-southeast-1" ? "ap-southeast-1a" : "us-east-1a"
   # subnet_id     = aws_subnet.pub_subnetA.id
   for_each = var.resource_list
@@ -198,7 +198,8 @@ resource "aws_instance" "jenkins_instance" {
   user_data = <<-EOF
               #!/bin/bash
               sudo apt-get update
-              sudo apt-get install openjdk-11-jre -y
+              sudo wget https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.deb
+              sudo dpkg -i jdk-17_linux-x64_bin.deb
               curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
               echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ | sudo tee \
               /etc/apt/sources.list.d/jenkins.list > /dev/null
@@ -209,28 +210,22 @@ resource "aws_instance" "jenkins_instance" {
               usermod -aG docker jenkins
               usermod -aG docker ubuntu
               systemctl restart docker
-              apt install unzip
+              apt-get install unzip
               mkdir /home/sonarqube
               useradd -p $(openssl passwd -1 sonar) sonarqube -s /bin/bash
               echo "sonarqube ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
-              wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.4.0.54424.zip
-              unzip sonar*
-              mv sonarqube-9.4.0.54424 /home/sonarqube
-              chmod -R 755 /home/sonarqube/sonarqube-9.4.0.54424
-              chown -R sonarqube:sonarqube /home/sonarqube/sonarqube-9.4.0.54424
-              su -c '/home/sonarqube/sonarqube-9.4.0.54424/bin/linux-x86-64/sonar.sh start' sonarqube
-              # #Install docker compose
-              # curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-              # chmod +x /usr/local/bin/docker-compose
-              # wget https://raw.githubusercontent.com/awstechguide/devops/master/docker-compose.yml
-              # sleep 30
-              # docker–compose up -d
+              wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.9.1.69595.zip
+              unzip sonarqube-9.9.1.*
+              mv sonarqube-9.9.1.69595 /home/sonarqube
+              chmod -R 755 /home/sonarqube/
+              chown -R sonarqube:sonarqube /home/sonarqube/
+              su -c '/home/sonarqube/sonarqube-9.9.1.69595/bin/linux-x86-64/sonar.sh start' sonarqube
               EOF
   tags = {
     Name = each.value
-  }            
+  }
   lifecycle {
     # prevent_destroy = true
     # create_before_destroy = true
-  }            
+  }
 }
