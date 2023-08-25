@@ -211,6 +211,7 @@ resource "aws_instance" "jenkins_instance" {
               echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ | sudo tee \
               /etc/apt/sources.list.d/jenkins.list > /dev/null
               sudo apt-get update -y
+              sudo apt install zip -y
               echo "Starting Jenkins and Sonarqube installation..."
               sudo apt-get install jenkins -y
               sudo sleep 10
@@ -238,32 +239,31 @@ resource "aws_instance" "jenkins_instance" {
               sudo apt-get install maven -y
               mvn --version
               echo "Starting JDK11 installation..."
-              apt-get install zip -y
-              su -c 'curl -s "https://get.sdkman.io" | bash' jenkins
-              source "$HOME/.sdkman/bin/sdkman-init.sh"
-              sdk install java 11.0.20-amzn
+              su -c 'curl -s "https://get.sdkman.io" | bash && source /var/lib/jenkins/.sdkman/bin/sdkman-init.sh && sdk install java 11.0.20-amzn' jenkins
+              su -c 'echo "export SDKMAN_DIR=/var/lib/jenkins/.sdkman" >> ~/.profile' jenkins
+              su -c 'echo "[[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"" >> ~/.profile' jenkins
               EOF
   tags = {
     Name = each.value
   }
 
-  provisioner "remote-exec" {
-    connection {
-      type        = "ssh"
-      user        = "jenkins"
-      private_key = file("terraform-key.pem")  # Change this to your private key path
-      host        = self.public_ip
-    }
+  # provisioner "remote-exec" {
+  #   connection {
+  #     type        = "ssh"
+  #     user        = "ubuntu"
+  #     private_key = file("terraform-key.pem")
+  #     host        = self.public_ip
+  #   }
 
-    inline = [
-      "echo 'export SDKMAN_DIR=\"$HOME/.sdkman\"' >> ~/.profile",
-      "echo '[[ -s \"$SDKMAN_DIR/bin/sdkman-init.sh\" ]] && source \"$SDKMAN_DIR/bin/sdkman-init.sh\"' >> ~/.profile"
-    ]
-  }
+  #   inline = [
+  #     "echo 'export SDKMAN_DIR=\"$HOME/.sdkman\"' >> ~/.profile",
+  #     "echo '[[ -s \"$SDKMAN_DIR/bin/sdkman-init.sh\" ]] && source \"$SDKMAN_DIR/bin/sdkman-init.sh\"' >> ~/.profile"
+  #   ]
+  # }
   
   lifecycle {
-    # prevent_destroy = true
-    # create_before_destroy = true
+  #    prevent_destroy = true
+      create_before_destroy = true
   }
-  
+
 }
