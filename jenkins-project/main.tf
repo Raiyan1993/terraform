@@ -1,14 +1,15 @@
-terraform {
-  backend "s3" {
-    bucket = "terraform-state-s3-raiyan"
-    key    = "my-terraform-project"
-    region = "ap-southeast-1"
-    #dynamodb_table          = "terraform-state-lock-dynamo"
-  }
-}
 # terraform {
-#    backend "local" {}
-# }   
+#   backend "s3" {
+#     bucket = "terraform-state-s3-raiyan"
+#     key    = "my-terraform-project"
+#     region = "ap-southeast-1"
+#     #dynamodb_table          = "terraform-state-lock-dynamo"
+#   }
+# }
+
+terraform {
+   backend "local" {}
+}   
 
 variable "app_region" {
   default = "ap-southeast-1"
@@ -20,11 +21,16 @@ provider "aws" {
   # secret_key = "CwYrrGV9gWZzWIUrpWbAMQGLGAnJYCKPQh2WZ8mG"
 }
 
-resource "aws_s3_bucket" "my-s3" {
-  bucket = "terraform-state-s3-raiyan"
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
 }
-resource "aws_s3_bucket_versioning" "my-versioning" {
-  bucket = aws_s3_bucket.my-s3.id
+
+resource "aws_s3_bucket" "my_bucket" {
+  bucket = "terraform-state-s3-raiyan-${random_id.bucket_suffix.hex}"
+}
+
+resource "aws_s3_bucket_versioning" "versioning" {
+  bucket = aws_s3_bucket.my_bucket.id
   versioning_configuration {
     status = "Enabled"
   }
@@ -197,14 +203,19 @@ resource "aws_instance" "jenkins_instance" {
 
   user_data = <<-EOF
               #!/bin/bash
+              echo "Starting userdata script..."
               sudo apt-get update
               sudo wget https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.deb
               sudo dpkg -i jdk-17_linux-x64_bin.deb
               curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
               echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ | sudo tee \
               /etc/apt/sources.list.d/jenkins.list > /dev/null
-              sudo apt-get update
+              sudo apt-get update -y
+              echo "Starting Jenkins and Sonarqube installation..."
               sudo apt-get install jenkins -y
+              sudo sleep 10
+              sudo apt install fontconfig -y
+              sudo sleep 10
               sudo apt-get install docker.io -y
               sudo su -
               usermod -aG docker jenkins
@@ -219,13 +230,40 @@ resource "aws_instance" "jenkins_instance" {
               mv sonarqube-9.9.1.69595 /home/sonarqube
               chmod -R 755 /home/sonarqube/
               chown -R sonarqube:sonarqube /home/sonarqube/
+              sudo sleep 10
               su -c '/home/sonarqube/sonarqube-9.9.1.69595/bin/linux-x86-64/sonar.sh start' sonarqube
+              sudo sleep 10
+              echo "Starting maven installation..."
+              sudo apt-get update -y
+              sudo apt-get install maven -y
+              mvn --version
+              echo "Starting JDK11 installation..."
+              apt-get install zip -y
+              su -c 'curl -s "https://get.sdkman.io" | bash' jenkins
+              source "$HOME/.sdkman/bin/sdkman-init.sh"
+              sdk install java 11.0.20-amzn
               EOF
   tags = {
     Name = each.value
   }
+
+  provisioner "remote-exec" {
+    connection {
+      type        = "ssh"
+      user        = "jenkins"
+      private_key = file("terraform-key.pem")  # Change this to your private key path
+      host        = self.public_ip
+    }
+
+    inline = [
+      "echo 'export SDKMAN_DIR=\"$HOME/.sdkman\"' >> ~/.profile",
+      "echo '[[ -s \"$SDKMAN_DIR/bin/sdkman-init.sh\" ]] && source \"$SDKMAN_DIR/bin/sdkman-init.sh\"' >> ~/.profile"
+    ]
+  }
+  
   lifecycle {
     # prevent_destroy = true
     # create_before_destroy = true
   }
+  
 }
