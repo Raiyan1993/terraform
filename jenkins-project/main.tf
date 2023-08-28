@@ -42,7 +42,7 @@ resource "aws_vpc" "my_vpc" {
   enable_dns_support   = true
   enable_dns_hostnames = true
   tags = {
-    Name = "my-vpc"
+    Name = "jenkins-eks",
   }
 }
 
@@ -50,6 +50,7 @@ variable "subnet_prefix" {
   description = "cidr block for subnet"
   #default = "10.0.30.0/24"
 }
+
 # 2. Create Subnet
 resource "aws_subnet" "pub_subnetA" {
   vpc_id                  = aws_vpc.my_vpc.id
@@ -173,7 +174,7 @@ resource "aws_network_interface" "my-ENI" {
 resource "aws_eip" "my_eip" {
   #vpc                       = true
   network_interface         = aws_network_interface.my-ENI.id
-  associate_with_private_ip = "10.0.10.50"
+  //associate_with_private_ip = "10.0.10.50"
   depends_on                = [aws_internet_gateway.myIGW]
 }
 # Create ssh keypair
@@ -222,6 +223,7 @@ resource "aws_instance" "jenkins_instance" {
               usermod -aG docker jenkins
               usermod -aG docker ubuntu
               systemctl restart docker
+              chmod 777 /var/run/docker.sock
               apt-get install unzip
               mkdir /home/sonarqube
               useradd -p $(openssl passwd -1 sonar) sonarqube -s /bin/bash
@@ -241,7 +243,7 @@ resource "aws_instance" "jenkins_instance" {
               echo "Starting JDK11 installation..."
               su -c 'curl -s "https://get.sdkman.io" | bash && source /var/lib/jenkins/.sdkman/bin/sdkman-init.sh && sdk install java 11.0.20-amzn' jenkins
               su -c 'echo "export SDKMAN_DIR=/var/lib/jenkins/.sdkman" >> ~/.profile' jenkins
-              su -c 'echo "[[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"" >> ~/.profile' jenkins
+              su -c 'echo "[[ -s "\$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "\$SDKMAN_DIR/bin/sdkman-init.sh"" >> ~/.profile' jenkins
               EOF
   tags = {
     Name = each.value
@@ -265,5 +267,4 @@ resource "aws_instance" "jenkins_instance" {
   #    prevent_destroy = true
       create_before_destroy = true
   }
-
 }
