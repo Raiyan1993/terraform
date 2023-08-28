@@ -1,5 +1,5 @@
 # Print output
- 
+
 # output "instanceId" {
 #   value = aws_instance.jenkins_instance.id  
 # }
@@ -10,7 +10,7 @@
 output "instanceId" {
   value = {
     for i, j in aws_instance.jenkins_instance : i => j.id
-  }  
+  }
 }
 
 # output "server_public_ip" {
