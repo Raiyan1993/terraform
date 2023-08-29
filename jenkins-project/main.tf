@@ -202,6 +202,10 @@ resource "aws_instance" "jenkins_instance" {
     device_index         = 0
   }
 
+  root_block_device {
+    volume_size = 30  # Size of the root EBS volume in GB
+  }
+
   user_data = <<-EOF
               #!/bin/bash
               echo "Starting userdata script..."
@@ -244,7 +248,18 @@ resource "aws_instance" "jenkins_instance" {
               su -c 'curl -s "https://get.sdkman.io" | bash && source /var/lib/jenkins/.sdkman/bin/sdkman-init.sh && sdk install java 11.0.20-amzn' jenkins
               su -c 'echo "export SDKMAN_DIR=/var/lib/jenkins/.sdkman" >> ~/.profile' jenkins
               su -c 'echo "[[ -s "\$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "\$SDKMAN_DIR/bin/sdkman-init.sh"" >> ~/.profile' jenkins
+              echo "Starting Trivy installation..."
+              sudo apt-get -y install wget apt-transport-https gnupg lsb-release
+              wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+              echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+              sudo apt-get update
+              sudo apt-get install trivy -y
+              echo "Installation of AWSCLI..."
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip awscliv2.zip
+              sudo ./aws/install
               EOF
+
   tags = {
     Name = each.value
   }
