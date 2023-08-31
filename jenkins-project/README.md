@@ -1,10 +1,10 @@
-# terraform-sample
-1. Terraform to spin up EC2 instance in a custom VPC and installing Jenkins, Docker, SonarQube.
+# terraform for jenkins pipeline
+This Terraform code would spin up EC2 instance in a custom VPC and installing Jenkins, Docker, SonarQube. Maven and Trivy.,
 
-**Pre-requisite:**
+**Here are the following steps:**
 
-Sonarqube Server 9.9.* required Java 17.
+1. terraform init
 
-**Note**: Run the following command to start sonarqube server
+2. terraform plan
 
-su -c '/home/sonarqube/sonarqube-9.9.1.69595/bin/linux-x86-64/sonar.sh start' sonarqube
+3. terraform apply --auto-approve
