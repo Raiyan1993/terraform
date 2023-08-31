@@ -1,12 +1,3 @@
-variable "aws_region" {
-  # default = "ap-southeast-1"
-}
-
-variable "vpc_cidr" {
-  description = "VPC CIDR Range"
-  # default = "192.168.0.0/16"
-}
-
 data "aws_availability_zones" "available" {
   state = "available"
 }

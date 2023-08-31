@@ -1,0 +1,38 @@
+@Library('my-shared-library') _
+
+pipeline {
+    agent any
+    
+    environment{
+
+        ACCESS_KEY = credentials('AWS_ACCESS_KEY_ID')
+        SECRET_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+    }
+    
+    stages{
+        stage("Git Checkout") {
+            steps{
+                script{
+                    gitCheckout(
+                        branch: "master",
+                        url: "https://github.com/Raiyan1993/terraform.git"
+                    )
+                }
+            }
+        }
+        stage("Create EKS Cluster"){
+            steps{
+                dir('EKS-project-1') {
+                    withCredentials([string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+                                     string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sh """
+                    terraform init
+                    terraform plan --var-file=variables.tfvars -var "access_key=${AWS_ACCESS_KEY_ID}" -var "secret_key=${AWS_SECRET_ACCESS_KEY}"
+                    //terraform apply --var-file=variables.tfvars --auto-approve
+                    """  
+                    }
+                } 
+            }
+        }
+    }
+}
