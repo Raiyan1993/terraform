@@ -29,6 +29,7 @@ MANIFEST
 .terraform.lock.hcl
 terraform.tfstate
 terraform.tfstate.backup
+.terraform.tfstate.*
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

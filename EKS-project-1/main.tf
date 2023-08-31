@@ -1,10 +1,10 @@
 variable "aws_region" {
-  default = "ap-southeast-1"
+  # default = "ap-southeast-1"
 }
 
 variable "vpc_cidr" {
   description = "VPC CIDR Range"
-  default = "192.168.0.0/16"
+  # default = "192.168.0.0/16"
 }
 
 data "aws_availability_zones" "available" {
@@ -67,7 +67,7 @@ resource "aws_route_table_association" "pub-RT-association" {
 # Create SSH Keypair
 resource "aws_key_pair" "my-keypair" {
   key_name   = "tarraform-key"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCxCsaSC8vCHsmONR10Bz+GqvrMCM6+RpajuUcbRsBPkkYT+p8bNw5oDZhOdgsvCp+Blaj5LhHCjTZhGT3C1+LvRMwb4IZNdhfhy0SrQDtN0dQnJlgwnaLkXGMsQ6I6ehJkNeDQ0wU5NOTITOZ4Q4AOmlaVRvjWcHjmAg4jVkOOLBNsl42Cw0aRSgOMo5RQSAuINl8OF8qbXh9rMcdrApAdS2UvLaD1zxpfeAIOjfdF2ZQL0UDafwEuOnyVVRCdMDrt6VcyXWNyo7NCr85jUGMTieMuSVL6ARJ+Aer4npKLRb7P4tsgKgIQKhu5J8coAm/GmfoVeWisGRpqZiqb8dZ5OYT6yPK2XUEwi69kmffiEmyfMJtOoRyomsPwP93WrxUtaJA037bBB/FmwYv80Zgbic1ZRdO6DQ2pRDs4uZ6dSh2QHBMWstfNB80OJ1mjw8iVtV4G1Dd9oBMuoqYC5QeQGxUn5gwpH+vAG7yMnBXXLPKvfAJHkE6QjnO2WD0qevM= raiyan@DESKTOP-670C4M2"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDIEj7w17D/w9H9L+9hB72vON7Q7R018qvhdc33yDbDEZ2goVm63zuBB16QtkjQz1VRbiu2PFNRfwyCHTKbmG+uON3RkAnAfKm4/WdZv/mydNnzsRNqYHitrRvzi68zWo0ixOQQwQXzznyggYbcb2XpaQZzwhEwEdyPRNxk0kcjDzatmcWrrIlcL8SrYwacceylg1mMJBDApH2x0EloBvdJKw1My8ru9mCO5HBX3Z/1WRWzSwPNqEshJIaZ0CSNW56UkRh23Y0Z47mgoVCKXMYUBwFjVBlRrHgfRG/8pu6jCxehjM8hpwVEyIAu4z+JlE9baCmbuxxjWWOCtD0hPxTDa5qupF/e7qKY5hy8MIIe+DvWKaR8qUNVM/veTF5hie1OzLRXVoYcZNtsFdF7NiZ96Je4dweCWyuM0yLYrGFCY8XD7IXjpAZUbtiPmP5C4cWUvE8kx+/Bu2+UQ3kkjUpsTGvIP+o7h+F5+sjw1+FNBYC0feVOhY8o/8ciMfKPkMc= raiyan@EPINCHEW015C"
 }
 
 locals {
@@ -116,13 +116,13 @@ module "eks" {
   create_aws_auth_configmap = true
   manage_aws_auth_configmap = true
   
-  aws_auth_roles = [
-    {
-      rolearn  = "arn:aws:iam::968020774214:role/self_mng-node-group-20230813042528843400000006"
-      username = "system:node:{{EC2PrivateDNSName}}"
-      groups   = ["system:bootstrappers", "system:nodes"]
-    },
-  ]
+  # aws_auth_roles = [
+  #   {
+  #     rolearn  = "arn:aws:iam::968020774214:role/self_mng-node-group-20230813042528843400000006"
+  #     username = "system:node:{{EC2PrivateDNSName}}"
+  #     groups   = ["system:bootstrappers", "system:nodes"]
+  #   },
+  # ]
 
   tags = {
     Environment = "dev"
