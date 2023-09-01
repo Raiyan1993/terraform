@@ -13,7 +13,7 @@ terraform apply --var-file=variables.tfvars --auto-approve
 
 aws eks update-kubeconfig --region ap-southeast-1 --name EKS-Cluster
 
-Enable the proxy to access the EKS API server locally as here[1].
+Enable the proxy to access the EKS API server locally in browser [here](http://localhost/api/v1/namespaces/kube-system/configmaps/aws-auth).
 ~~~
 kubectl proxy --port=80
 terraform apply --var-file=variables.tfvars --auto-approve
