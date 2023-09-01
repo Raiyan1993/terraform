@@ -1,5 +1,5 @@
 # terraform for jenkins pipeline
-This Terraform code would spin up EC2 instance in a custom VPC and installing Jenkins, Docker, SonarQube. Maven and Trivy.,
+This Terraform code would spin up EC2 instance in a custom VPC and installing Jenkins, Docker, SonarQube, Maven, Trivy, AWSCLI, and Kubectl.
 
 **Here are the following steps:**
 ~~~
