@@ -21,7 +21,7 @@ terraform apply --var-file=variables.tfvars --auto-approve
 
 Note: Rerun the "terraform apply" command in case of any failure. However, you can terminate the execution if it remains stuck for an extended period during coreDNS creation or when a node has joined the cluster.
 
-To Destroy specific resource created by module
+**To Destroy specific resource created by module**
 ~~~
 terraform destroy --target=<module.name.resource>
 ~~~
