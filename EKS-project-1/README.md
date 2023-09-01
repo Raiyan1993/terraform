@@ -10,9 +10,9 @@ terraform apply --var-file=variables.tfvars --auto-approve
 **Once the cluster status becomes "Active"**
 
 *Set the EKS cluster context using the following command:*
-
+~~~
 aws eks update-kubeconfig --region ap-southeast-1 --name EKS-Cluster
-
+~~~
 Enable the proxy to access the EKS API server locally in browser [here](http://localhost/api/v1/namespaces/kube-system/configmaps/aws-auth).
 ~~~
 kubectl proxy --port=80
