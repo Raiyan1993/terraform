@@ -167,7 +167,7 @@ resource "aws_security_group" "mySG" {
 # 7. Create network interface
 resource "aws_network_interface" "my-ENI" {
   subnet_id       = aws_subnet.pub_subnetA.id
-  private_ips     = ["10.0.10.50"]
+  //private_ips     = ["10.0.10.50"]
   security_groups = [aws_security_group.mySG.id]
 }
 # 8. Create EIP
