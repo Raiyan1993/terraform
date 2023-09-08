@@ -15,12 +15,13 @@ resource "aws_vpc" "my_vpc" {
 # 2. Create Subnet
 resource "aws_subnet" "pub_subnet" {
   count = "${length(data.aws_availability_zones.available.names)}"
-  availability_zone       = "${data.aws_availability_zones.available.names[count.index]}"
-  cidr_block              = "192.168.${count.index}.0/24"
+
+  availability_zone = "${data.aws_availability_zones.available.names[count.index]}"
+  cidr_block        = "192.168.${count.index}.0/24"
   map_public_ip_on_launch = true
   vpc_id                  = aws_vpc.my_vpc.id
   tags = {
-    Name = "terraform-eks",
+    Name = "terraform-${count.index}"
   }
 }
 
@@ -51,6 +52,7 @@ resource "aws_route_table" "pub-RT" {
 # 5. Create route table association
 resource "aws_route_table_association" "pub-RT-association" {
   count = "${length(data.aws_availability_zones.available.names)}"
+  
   subnet_id      = aws_subnet.pub_subnet.*.id[count.index]
   route_table_id = aws_route_table.pub-RT.id
 }
