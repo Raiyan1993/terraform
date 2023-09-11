@@ -107,50 +107,25 @@ resource "aws_route_table_association" "pubB-RT-association" {
   subnet_id      = aws_subnet.pub_subnetB.id
   route_table_id = aws_route_table.pub-RT.id
 }
+
+variable "ingress_port" {
+  default = [22, 80, 443, 8080, 9000]
+}
+
 # 6. Create security group
 resource "aws_security_group" "mySG" {
   name        = "mySG"
   description = "Allow inbound traffic"
   vpc_id      = aws_vpc.my_vpc.id
 
-  ingress {
-    description = "open HTTPS from everywhere"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "open HTTP everywhere"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "open port 8080 for jenkins"
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "open port 9000 for sonarqube"
-    from_port   = 9000
-    to_port     = 9000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "open SSH from everywhere"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+  dynamic ingress {
+    for_each = var.ingress_port
+    content {
+          from_port   = ingress.value
+          to_port     = ingress.value
+          protocol    = "tcp"
+          cidr_blocks = ["0.0.0.0/0"]
+    }
   }
 
   egress {
